@@ -15,17 +15,17 @@
     menu: [
       { id: 'chicken', name: '반반 닭강정', description: '달콤 + 매콤', price: 5000, image: './assets/menu-placeholder.svg', soldOut: false },
       { id: 'potato', name: '갈릭 감자', description: '버터갈릭', price: 4000, image: './assets/menu-placeholder.svg', soldOut: false },
-      { id: 'ade', name: '레몬에이드', description: '수제 레몬청', price: 3000, image: './assets/menu-placeholder.svg', soldOut: false },
+      { id: 'kimchi-noodles', name: '김치말이국수', description: '시원한 김치말이국수', price: 6000, image: './assets/menu-placeholder.svg', soldOut: false },
       { id: 'churros', name: '초코츄러스', description: '시나몬 슈가', price: 3500, image: './assets/menu-placeholder.svg', soldOut: false }
     ],
     orders: [
       sampleOrder(36, 'ready', '이하늘', [{ menuId: 'chicken', quantity: 1 }], -18),
-      sampleOrder(37, 'ready', '박서윤', [{ menuId: 'ade', quantity: 2 }], -16),
+      sampleOrder(37, 'ready', '박서윤', [{ menuId: 'kimchi-noodles', quantity: 2 }], -16),
       sampleOrder(38, 'cooking', '김지우', [{ menuId: 'churros', quantity: 2 }], -13),
-      sampleOrder(39, 'cooking', '최도윤', [{ menuId: 'potato', quantity: 1 }, { menuId: 'ade', quantity: 1 }], -11),
+      sampleOrder(39, 'cooking', '최도윤', [{ menuId: 'potato', quantity: 1 }, { menuId: 'kimchi-noodles', quantity: 1 }], -11),
       sampleOrder(40, 'confirmed', '정유진', [{ menuId: 'chicken', quantity: 1 }], -8),
       sampleOrder(41, 'confirmed', '이민준', [{ menuId: 'potato', quantity: 2 }], -5),
-      sampleOrder(43, 'payment_pending', '한서아', [{ menuId: 'ade', quantity: 1 }], -2)
+      sampleOrder(43, 'payment_pending', '한서아', [{ menuId: 'kimchi-noodles', quantity: 1 }], -2)
     ]
   });
 
