@@ -144,7 +144,6 @@ button:disabled { cursor: not-allowed; opacity: .38; }
   object-fit: cover;
   background: var(--soft);
   border-bottom: 1px solid var(--line);
-  filter: saturate(.7) contrast(1.03);
 }
 .menu-card.sold-out img { filter: grayscale(1); opacity: .35; }
 .sold-out-label {
