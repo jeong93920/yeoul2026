@@ -18,6 +18,7 @@
     cooking: { label: '수령 가능', next: 'ready' },
     ready: { label: '수령 완료', next: 'picked_up' }
   };
+  const prepSpeedLabels = { fast: '빨라요', normal: '적당해요', slow: '늦어요' };
 
   function toast(message) {
     const element = $('#toast');
@@ -172,6 +173,20 @@
         }
       });
     });
+
+    document.querySelectorAll('[data-prep-speed]').forEach(select => {
+      select.addEventListener('change', async () => {
+        select.disabled = true;
+        try {
+          const item = await store.updateMenuItem(select.dataset.prepSpeed, { prepSpeed: select.value });
+          toast(`${item.name} · ${prepSpeedLabels[item.prepSpeed]} 저장`);
+        } catch (error) {
+          toast(error.message);
+        } finally {
+          select.disabled = false;
+        }
+      });
+    });
   }
 
   function renderMenu(state) {
@@ -182,6 +197,11 @@
     $('#admin-menu-list').innerHTML = state.menu.map(item => `<div class="admin-menu-item menu-editor ${item.active ? '' : 'inactive'}">
       <div class="menu-editor-title"><strong>${escapeHtml(item.name)}</strong><small>${item.active ? (item.soldOut ? '품절' : '판매 중') : '판매 준비 중'}</small></div>
       <div class="menu-editor-controls">
+        <label class="prep-speed-field"><span>소요시간</span><select data-prep-speed="${item.id}" aria-label="${escapeHtml(item.name)} 소요시간">
+          <option value="fast" ${item.prepSpeed === 'fast' ? 'selected' : ''}>빨라요</option>
+          <option value="normal" ${item.prepSpeed === 'normal' ? 'selected' : ''}>적당해요</option>
+          <option value="slow" ${item.prepSpeed === 'slow' ? 'selected' : ''}>늦어요</option>
+        </select></label>
         <label><span class="sr-only">${escapeHtml(item.name)} 가격</span><input class="price-input" data-price="${item.id}" type="number" min="0" step="100" inputmode="numeric" value="${item.price}" aria-label="${escapeHtml(item.name)} 가격"></label>
         <button class="stock-button" type="button" data-save-price="${item.id}">가격 저장</button>
         <button class="stock-button ${item.active ? '' : 'start'}" type="button" data-active="${item.id}">${item.active ? '판매 중지' : '판매 시작'}</button>

@@ -49,7 +49,8 @@
     image: row.image_url || './assets/menu-placeholder.svg',
     soldOut: row.sold_out,
     active: row.active,
-    sortOrder: row.sort_order
+    sortOrder: row.sort_order,
+    prepSpeed: row.prep_speed || 'normal'
   });
 
   const mapQueueOrder = row => ({
@@ -135,7 +136,7 @@
   async function loadPublicState() {
     const [settingsResult, menuResult, queueResult] = await Promise.all([
       client.from('booth_settings').select('booth_name,bank_name,account_holder,account_number,transfer_qr_url,is_open').limit(1).maybeSingle(),
-      client.from('booth_menu_items').select('id,name,description,price,image_url,sold_out,active,sort_order').order('sort_order'),
+      client.from('booth_menu_items').select('id,name,description,price,image_url,sold_out,active,sort_order,prep_speed').order('sort_order'),
       client.from('booth_public_queue').select('order_id,order_number,status,created_at,updated_at').order('order_number')
     ]);
     const settings = throwIfError(settingsResult);
@@ -158,7 +159,7 @@
   async function loadAdminState() {
     const [settingsResult, menuResult, ordersResult] = await Promise.all([
       client.from('booth_settings').select('booth_name,bank_name,account_holder,account_number,transfer_qr_url,is_open').limit(1).maybeSingle(),
-      client.from('booth_menu_items').select('id,name,description,price,image_url,sold_out,active,sort_order').order('sort_order'),
+      client.from('booth_menu_items').select('id,name,description,price,image_url,sold_out,active,sort_order,prep_speed').order('sort_order'),
       client.from('booth_orders').select('id,order_number,payer_name,contact,status,total_amount,created_at,updated_at,booth_order_items(menu_item_id,name_snapshot,price_snapshot,quantity,line_total)').order('order_number')
     ]);
     const settings = throwIfError(settingsResult);
@@ -282,7 +283,7 @@
     const data = throwIfError(await client.from('booth_menu_items')
       .update({ sold_out: !current.soldOut })
       .eq('id', menuId)
-      .select('id,name,description,price,image_url,sold_out,active,sort_order')
+      .select('id,name,description,price,image_url,sold_out,active,sort_order,prep_speed')
       .single());
     const updated = mapMenu(data);
     state = { ...state, menu: state.menu.map(item => item.id === menuId ? updated : item) };
@@ -305,10 +306,14 @@
       values.active = Boolean(changes.active);
       if (changes.active && current.description === '가격 확정 후 판매 시작') values.description = '';
     }
+    if (Object.hasOwn(changes, 'prepSpeed')) {
+      if (!['fast', 'normal', 'slow'].includes(changes.prepSpeed)) throw new Error('올바른 소요시간을 선택해 주세요.');
+      values.prep_speed = changes.prepSpeed;
+    }
     const data = throwIfError(await client.from('booth_menu_items')
       .update(values)
       .eq('id', menuId)
-      .select('id,name,description,price,image_url,sold_out,active,sort_order')
+      .select('id,name,description,price,image_url,sold_out,active,sort_order,prep_speed')
       .single());
     const updated = mapMenu(data);
     state = { ...state, menu: state.menu.map(item => item.id === menuId ? updated : item) };

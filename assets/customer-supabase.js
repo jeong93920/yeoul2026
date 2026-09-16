@@ -14,6 +14,7 @@
   const steps = ['menu', 'review', 'payment', 'queue'];
   const $ = selector => document.querySelector(selector);
   const MAX_QUANTITY = 20;
+  const prepSpeedLabels = { fast: '빨라요', normal: '적당해요', slow: '늦어요' };
   const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 
   function showStep(name) {
@@ -78,12 +79,13 @@
       const safeName = escapeHtml(item.name);
       const safeDescription = escapeHtml(item.description);
       const image = escapeHtml(item.image || './assets/menu-placeholder.svg');
-      const supportsNoCucumber = item.name === '김치말이국수';
+      const supportsNoCucumber = ['김치말이국수', '세트메뉴'].includes(item.name);
       const noCucumber = Boolean(cartOptions.get(item.id)?.noCucumber);
       return `<article class="menu-card ${item.soldOut ? 'sold-out' : ''}">
         <img src="${image}" alt="${safeName} 사진">
         ${item.soldOut ? '<span class="sold-out-label">품절</span>' : ''}
         <div class="menu-info"><h3>${safeName}</h3><p>${safeDescription || '&nbsp;'}</p>
+          <div class="prep-speed prep-speed-${item.prepSpeed}">소요시간 · ${prepSpeedLabels[item.prepSpeed] || prepSpeedLabels.normal}</div>
           <div class="menu-card-footer"><strong>${store.formatPrice(item.price)}</strong>
             <div class="quantity-control">
               ${quantity ? `<button class="minus" type="button" data-menu="${item.id}" data-change="-1" aria-label="${safeName} 수량 줄이기">−</button><span>${quantity}</span>` : ''}
