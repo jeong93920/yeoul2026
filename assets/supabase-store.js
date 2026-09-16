@@ -235,7 +235,11 @@
 
   async function createOrder({ payerName, contact, items }) {
     const normalizedItems = items
-      .map(item => ({ menu_id: item.menuId, quantity: Math.min(20, Math.max(0, Number(item.quantity) || 0)) }))
+      .map(item => ({
+        menu_id: item.menuId,
+        quantity: Math.min(20, Math.max(0, Number(item.quantity) || 0)),
+        no_cucumber: Boolean(item.noCucumber)
+      }))
       .filter(item => item.quantity > 0);
     if (!normalizedItems.length) throw new Error('주문할 메뉴가 없습니다.');
     const normalizedContact = String(contact || '').replace(/[^0-9]/g, '');
@@ -255,7 +259,11 @@
       status: row.status,
       totalAmount: Number(row.total_amount),
       createdAt: row.created_at,
-      items: normalizedItems.map(item => ({ menuId: item.menu_id, quantity: item.quantity }))
+      items: normalizedItems.map(item => ({
+        menuId: item.menu_id,
+        quantity: item.quantity,
+        noCucumber: item.no_cucumber
+      }))
     };
     state = { ...state, orders: mergeOwnOrder(state.orders, order) };
     notify();

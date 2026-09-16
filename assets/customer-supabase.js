@@ -3,6 +3,7 @@
 
   const store = window.BoothStore;
   const cart = new Map();
+  const cartOptions = new Map();
   let activeOrderId = null;
   let toastTimer;
 
@@ -34,7 +35,11 @@
   function getCartItems() {
     return [...cart.entries()]
       .filter(([, quantity]) => quantity > 0)
-      .map(([menuId, quantity]) => ({ menuId, quantity }));
+      .map(([menuId, quantity]) => ({
+        menuId,
+        quantity,
+        noCucumber: Boolean(cartOptions.get(menuId)?.noCucumber)
+      }));
   }
 
   function cartTotal(state) {
@@ -47,7 +52,10 @@
   function pruneCart(state) {
     [...cart.keys()].forEach(menuId => {
       const menu = state.menu.find(item => item.id === menuId);
-      if (!menu || menu.soldOut || !menu.active) cart.delete(menuId);
+      if (!menu || menu.soldOut || !menu.active) {
+        cart.delete(menuId);
+        cartOptions.delete(menuId);
+      }
     });
   }
 
@@ -71,6 +79,8 @@
       const safeName = escapeHtml(item.name);
       const safeDescription = escapeHtml(item.description);
       const image = escapeHtml(item.image || './assets/menu-placeholder.svg');
+      const supportsNoCucumber = item.name === '김치말이국수';
+      const noCucumber = Boolean(cartOptions.get(item.id)?.noCucumber);
       return `<article class="menu-card ${item.soldOut ? 'sold-out' : ''}">
         <img src="${image}" alt="${safeName} 사진">
         ${item.soldOut ? '<span class="sold-out-label">품절</span>' : ''}
@@ -80,6 +90,7 @@
               ${quantity ? `<button class="minus" type="button" data-menu="${item.id}" data-change="-1" aria-label="${safeName} 수량 줄이기">−</button><span>${quantity}</span>` : ''}
               <button type="button" data-menu="${item.id}" data-change="1" aria-label="${safeName} 담기" style="${quantity ? '' : 'width:auto;padding:0 10px'}" ${item.soldOut || quantity >= MAX_QUANTITY ? 'disabled' : ''}>${quantity ? '+' : '담기'}</button>
             </div>
+            ${supportsNoCucumber && quantity ? `<label class="menu-option"><input type="checkbox" data-no-cucumber="${item.id}" ${noCucumber ? 'checked' : ''}><span>오이 빼기</span></label>` : ''}
           </div></div></article>`;
     }).join('');
 
@@ -89,9 +100,19 @@
         const previous = cart.get(menuId) || 0;
         const next = Math.min(MAX_QUANTITY, Math.max(0, previous + Number(button.dataset.change)));
         if (next === MAX_QUANTITY && previous === MAX_QUANTITY) toast(`메뉴당 최대 ${MAX_QUANTITY}개까지 담을 수 있어요.`);
-        if (next) cart.set(menuId, next); else cart.delete(menuId);
+        if (next) cart.set(menuId, next);
+        else {
+          cart.delete(menuId);
+          cartOptions.delete(menuId);
+        }
         renderMenu(store.getState());
         renderCartBar(store.getState());
+      });
+    });
+
+    document.querySelectorAll('[data-no-cucumber]').forEach(input => {
+      input.addEventListener('change', () => {
+        cartOptions.set(input.dataset.noCucumber, { noCucumber: input.checked });
       });
     });
   }
@@ -107,7 +128,8 @@
     const rows = getCartItems().map(item => {
       const menu = state.menu.find(menuItem => menuItem.id === item.menuId);
       if (!menu) return '';
-      return `<div class="summary-row summary-item"><div>${escapeHtml(menu.name)}<small>${store.formatPrice(menu.price)} × ${item.quantity}</small></div><strong>${store.formatPrice(menu.price * item.quantity)}</strong></div>`;
+      const option = item.noCucumber ? '<small class="summary-option">오이 빼기</small>' : '';
+      return `<div class="summary-row summary-item"><div>${escapeHtml(menu.name)}${option}<small>${store.formatPrice(menu.price)} × ${item.quantity}</small></div><strong>${store.formatPrice(menu.price * item.quantity)}</strong></div>`;
     }).join('');
     const total = cartTotal(state);
     $('#order-summary').innerHTML = `${rows}<div class="summary-row total"><span>총 금액</span><strong>${store.formatPrice(total)}</strong></div>`;
@@ -294,6 +316,7 @@
     store.clearCurrentOrder();
     activeOrderId = null;
     cart.clear();
+    cartOptions.clear();
     $('#payer-name').value = '';
     $('#contact').value = '';
     renderMenu(store.getState());
