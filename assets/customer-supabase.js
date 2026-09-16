@@ -62,9 +62,8 @@
   function renderMenu(state) {
     pruneCart(state);
     $('#booth-name').textContent = state.settings.boothName;
-    const waitingTeams = state.orders.filter(order => ['payment_pending', 'confirmed', 'cooking'].includes(order.status)).length;
     $('#wait-time').textContent = state.settings.isOpen
-      ? (waitingTeams ? `지금 주문하면 앞에 ${waitingTeams}팀` : '지금 주문하면 바로 접수돼요')
+      ? '소면을 삶고 있어 주문이 오래 걸리고 있어요'
       : '지금은 주문 준비 중이에요';
     const available = state.menu.filter(item => !item.soldOut);
     $('#menu-count').textContent = `${available.length}개 메뉴`;
