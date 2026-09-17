@@ -208,8 +208,11 @@
       $('#admin-menu-list').innerHTML = '<div class="empty-state">등록된 메뉴가 없습니다.</div>';
       return;
     }
-    $('#admin-menu-list').innerHTML = state.menu.map(item => `<div class="admin-menu-item menu-editor ${item.active ? '' : 'inactive'}">
-      <div class="menu-editor-title"><strong>${escapeHtml(item.name)}</strong><small>${item.active ? (item.soldOut ? '품절' : '판매 중') : '판매 준비 중'}</small></div>
+    const potatoStock = state.menu.find(item => item.name === '감자치즈누룽지')?.stockRemaining;
+    $('#admin-menu-list').innerHTML = state.menu.map(item => {
+      const stockText = item.name === '감자치즈누룽지' && potatoStock != null ? ` · 재고 ${potatoStock}개` : '';
+      return `<div class="admin-menu-item menu-editor ${item.active ? '' : 'inactive'}">
+      <div class="menu-editor-title"><strong>${escapeHtml(item.name)}</strong><small>${item.active ? (item.soldOut ? '품절' : '판매 중') : '판매 준비 중'}${stockText}</small></div>
       <div class="menu-editor-controls">
         <label class="prep-speed-field"><span>소요시간</span><select data-prep-speed="${item.id}" aria-label="${escapeHtml(item.name)} 소요시간">
           <option value="fast" ${item.prepSpeed === 'fast' ? 'selected' : ''}>빨라요</option>
@@ -221,7 +224,8 @@
         <button class="stock-button ${item.active ? '' : 'start'}" type="button" data-active="${item.id}">${item.active ? '판매 중지' : '판매 시작'}</button>
         <button class="stock-button ${item.soldOut ? 'sold-out' : ''}" type="button" data-stock="${item.id}" ${item.active ? '' : 'disabled'}>${item.soldOut ? '품절 해제' : '품절 처리'}</button>
       </div>
-    </div>`).join('');
+    </div>`;
+    }).join('');
     bindMenuActions();
   }
 
