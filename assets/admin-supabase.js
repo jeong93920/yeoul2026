@@ -208,9 +208,8 @@
       $('#admin-menu-list').innerHTML = '<div class="empty-state">등록된 메뉴가 없습니다.</div>';
       return;
     }
-    const potatoStock = state.menu.find(item => item.name === '감자치즈누룽지')?.stockRemaining;
     $('#admin-menu-list').innerHTML = state.menu.map(item => {
-      const stockText = item.name === '감자치즈누룽지' && potatoStock != null ? ` · 재고 ${potatoStock}개` : '';
+      const stockText = item.stockRemaining != null ? ` · 재고 ${item.stockRemaining}개` : '';
       return `<div class="admin-menu-item menu-editor ${item.active ? '' : 'inactive'}">
       <div class="menu-editor-title"><strong>${escapeHtml(item.name)}</strong><small>${item.active ? (item.soldOut ? '품절' : '판매 중') : '판매 준비 중'}${stockText}</small></div>
       <div class="menu-editor-controls">

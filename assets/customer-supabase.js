@@ -15,7 +15,10 @@
   const $ = selector => document.querySelector(selector);
   const MAX_QUANTITY = 20;
   const prepSpeedLabels = { fast: '빨라요', normal: '적당해요', slow: '늦어요' };
-  const potatoStockMenus = new Set(['감자치즈누룽지', '세트메뉴']);
+  const stockGroups = {
+    potato: { itemName: '감자치즈누룽지', menuNames: new Set(['감자치즈누룽지', '세트메뉴']) },
+    kimchi: { itemName: '김치말이국수', menuNames: new Set(['김치말이국수', '세트메뉴']) }
+  };
   const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 
   function showStep(name) {
@@ -51,16 +54,38 @@
     }, 0);
   }
 
-  function getPotatoStock(state) {
-    const potato = state.menu.find(item => item.name === '감자치즈누룽지');
-    return potato?.stockRemaining ?? null;
+  function getStock(state, group) {
+    const config = stockGroups[group];
+    const item = state.menu.find(menuItem => menuItem.name === config.itemName);
+    return item?.stockRemaining ?? null;
   }
 
-  function cartPotatoUnits(state) {
+  function cartStockUnits(state, group) {
+    const config = stockGroups[group];
     return getCartItems().reduce((total, item) => {
       const menu = state.menu.find(menuItem => menuItem.id === item.menuId);
-      return total + (menu && potatoStockMenus.has(menu.name) ? item.quantity : 0);
+      return total + (menu && config.menuNames.has(menu.name) ? item.quantity : 0);
     }, 0);
+  }
+
+  function stockGroupsForMenu(name) {
+    return Object.entries(stockGroups)
+      .filter(([, config]) => config.menuNames.has(name))
+      .map(([group]) => group);
+  }
+
+  function menuStockRemaining(state, name) {
+    const stocks = stockGroupsForMenu(name)
+      .map(group => getStock(state, group))
+      .filter(stock => stock != null);
+    return stocks.length ? Math.min(...stocks) : null;
+  }
+
+  function stockLimitReached(state, name) {
+    return stockGroupsForMenu(name).some(group => {
+      const stock = getStock(state, group);
+      return stock != null && cartStockUnits(state, group) >= stock;
+    });
   }
 
   function pruneCart(state) {
@@ -80,9 +105,7 @@
     $('#wait-time').textContent = state.settings.isOpen
       ? (waitingTeams ? `지금 주문하면 앞에 ${waitingTeams}팀` : '지금 주문하면 바로 접수돼요')
       : '지금은 주문 준비 중이에요';
-    const potatoStock = getPotatoStock(state);
-    const reservedPotato = cartPotatoUnits(state);
-    const available = state.menu.filter(item => !item.soldOut && !(potatoStock === 0 && potatoStockMenus.has(item.name)));
+    const available = state.menu.filter(item => !item.soldOut && menuStockRemaining(state, item.name) !== 0);
     $('#menu-count').textContent = `${available.length}개 메뉴`;
 
     if (!state.settings.isOpen || !state.menu.length) {
@@ -97,12 +120,13 @@
       const image = escapeHtml(item.image || './assets/menu-placeholder.svg');
       const supportsNoCucumber = ['김치말이국수', '세트메뉴'].includes(item.name);
       const noCucumber = Boolean(cartOptions.get(item.id)?.noCucumber);
-      const usesPotatoStock = potatoStockMenus.has(item.name);
-      const sharedStockOut = usesPotatoStock && potatoStock === 0;
+      const stockRemaining = menuStockRemaining(state, item.name);
+      const sharedStockOut = stockRemaining === 0;
       const unavailable = item.soldOut || sharedStockOut;
-      const stockLimitReached = usesPotatoStock && potatoStock != null && reservedPotato >= potatoStock;
-      const stockText = usesPotatoStock && potatoStock != null
-        ? `<div class="prep-speed">감자 재고 · ${potatoStock}개 남음</div>`
+      const reachedStockLimit = stockLimitReached(state, item.name);
+      const stockLabel = item.name === '세트메뉴' ? '세트 가능' : '남은 수량';
+      const stockText = stockRemaining != null
+        ? `<div class="prep-speed">${stockLabel} · ${stockRemaining}개</div>`
         : '';
       return `<article class="menu-card ${unavailable ? 'sold-out' : ''}">
         <img src="${image}" alt="${safeName} 사진">
@@ -113,7 +137,7 @@
           <div class="menu-card-footer"><strong>${store.formatPrice(item.price)}</strong>
             <div class="quantity-control">
               ${quantity ? `<button class="minus" type="button" data-menu="${item.id}" data-change="-1" aria-label="${safeName} 수량 줄이기">−</button><span>${quantity}</span>` : ''}
-              <button type="button" data-menu="${item.id}" data-change="1" aria-label="${safeName} 담기" style="${quantity ? '' : 'width:auto;padding:0 10px'}" ${unavailable || stockLimitReached || quantity >= MAX_QUANTITY ? 'disabled' : ''}>${quantity ? '+' : '담기'}</button>
+              <button type="button" data-menu="${item.id}" data-change="1" aria-label="${safeName} 담기" style="${quantity ? '' : 'width:auto;padding:0 10px'}" ${unavailable || reachedStockLimit || quantity >= MAX_QUANTITY ? 'disabled' : ''}>${quantity ? '+' : '담기'}</button>
             </div>
             ${supportsNoCucumber && quantity ? `<label class="menu-option"><input type="checkbox" data-no-cucumber="${item.id}" ${noCucumber ? 'checked' : ''}><span>오이 빼기</span></label>` : ''}
           </div></div></article>`;
@@ -125,9 +149,9 @@
         const currentState = store.getState();
         const menu = currentState.menu.find(item => item.id === menuId);
         const change = Number(button.dataset.change);
-        const potatoStock = getPotatoStock(currentState);
-        if (change > 0 && menu && potatoStockMenus.has(menu.name) && potatoStock != null && cartPotatoUnits(currentState) >= potatoStock) {
-          toast(`감자치즈누룽지는 ${potatoStock}개만 남았어요.`);
+        if (change > 0 && menu && stockLimitReached(currentState, menu.name)) {
+          const stockRemaining = menuStockRemaining(currentState, menu.name);
+          toast(`${menu.name}은 ${stockRemaining}개만 더 주문할 수 있어요.`);
           return;
         }
         const previous = cart.get(menuId) || 0;
