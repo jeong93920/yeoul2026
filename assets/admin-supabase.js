@@ -19,6 +19,8 @@
     ready: { label: '수령 완료', next: 'picked_up' }
   };
   const prepSpeedLabels = { fast: '빨라요', normal: '적당해요', slow: '늦어요' };
+  const SALES_DAYS = { day1: '2026-09-16', day2: '2026-09-17' };
+  const paidStatuses = ['confirmed', 'cooking', 'ready', 'picked_up'];
 
   function toast(message) {
     const element = $('#toast');
@@ -48,10 +50,22 @@
     return '연락처 없음';
   }
 
+  function koreaDateKey(iso) {
+    const parts = new Intl.DateTimeFormat('en', {
+      timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(new Date(iso));
+    const value = Object.fromEntries(parts.map(part => [part.type, part.value]));
+    return `${value.year}-${value.month}-${value.day}`;
+  }
+
   function renderMetrics(state) {
-    const sales = state.orders
-      .filter(order => ['confirmed', 'cooking', 'ready', 'picked_up'].includes(order.status))
+    const paidOrders = state.orders.filter(order => paidStatuses.includes(order.status));
+    const sales = paidOrders.reduce((total, order) => total + store.calculateOrderTotal(order, state), 0);
+    const salesForDay = date => paidOrders
+      .filter(order => koreaDateKey(order.createdAt) === date)
       .reduce((total, order) => total + store.calculateOrderTotal(order, state), 0);
+    $('#metric-sales-day1').textContent = store.formatPrice(salesForDay(SALES_DAYS.day1));
+    $('#metric-sales-day2').textContent = store.formatPrice(salesForDay(SALES_DAYS.day2));
     $('#metric-sales').textContent = store.formatPrice(sales);
     $('#metric-payment').textContent = state.orders.filter(order => order.status === 'payment_pending').length;
     $('#metric-cooking').textContent = state.orders.filter(order => ['confirmed', 'cooking'].includes(order.status)).length;
@@ -220,6 +234,8 @@
 
   function clearAdminView() {
     $('#kds-menu-totals').replaceChildren();
+    $('#metric-sales-day1').textContent = '0원';
+    $('#metric-sales-day2').textContent = '0원';
     $('#metric-sales').textContent = '0원';
     $('#metric-payment').textContent = '0';
     $('#metric-cooking').textContent = '0';

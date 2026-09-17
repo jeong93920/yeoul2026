@@ -935,6 +935,7 @@ button:disabled { cursor: not-allowed; opacity: .38; }
   margin-top: 10px;
   font-size: 28px;
 }
+.kds-metrics .day-sales-card strong { font-size: 24px; }
 .menu-settings {
   margin-top: 10px;
   border: 1px solid var(--line);

@@ -7,7 +7,7 @@
   <title>부스 주문 관리</title>
   <link rel="icon" type="image/png" href="../assets/favicon.png?v=202608292215">
   <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png?v=202608292215">
-  <link rel="stylesheet" href="../assets/styles.css?v=202609161350">
+  <link rel="stylesheet" href="../assets/styles.css?v=202609171030">
 </head>
 <body class="admin-body">
   <main class="admin-login-wrap" id="admin-login">
@@ -61,7 +61,9 @@
         <aside class="kds-status-panel" aria-label="운영 현황">
           <div class="panel-heading"><div><h2>운영 현황</h2><p>주문 단계별 현황입니다.</p></div></div>
           <section class="metric-grid kds-metrics" aria-label="주문 현황 요약">
-            <article class="metric-card sales-card"><span>현재 매출</span><strong id="metric-sales">0원</strong><small>입금 확인 완료 기준</small></article>
+            <article class="metric-card day-sales-card"><span>1일차 매출 · 9/16</span><strong id="metric-sales-day1">0원</strong><small>입금 확인 완료 기준</small></article>
+            <article class="metric-card day-sales-card"><span>2일차 매출 · 9/17</span><strong id="metric-sales-day2">0원</strong><small>입금 확인 완료 기준</small></article>
+            <article class="metric-card sales-card"><span>전체 매출</span><strong id="metric-sales">0원</strong><small>1·2일차 합계</small></article>
             <article class="metric-card"><span>입금 확인 필요</span><strong id="metric-payment">0</strong></article>
             <article class="metric-card"><span>접수·조리 중</span><strong id="metric-cooking">0</strong></article>
             <article class="metric-card"><span>수령 대기</span><strong id="metric-ready">0</strong></article>
@@ -85,6 +87,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
   <script src="../assets/supabase-config.js"></script>
   <script src="../assets/supabase-store.js?v=202609161350"></script>
-  <script src="../assets/admin-supabase.js?v=202609161350"></script>
+  <script src="../assets/admin-supabase.js?v=202609171030"></script>
 </body>
 </html>
