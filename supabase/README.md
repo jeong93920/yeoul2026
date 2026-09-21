@@ -1,6 +1,8 @@
 # Supabase 연결 준비
 
-대상 프로젝트: `vedraqrdkwyyipztxddw` (`jnuproject's Project`)
+대상 프로젝트: `rvamsrgvfubsvlttuaqt` (`Seoul`, ipad93920@gmail.com 계정의 독립 프로젝트)
+
+이 프로젝트는 원래 예제였던 `vedraqrdkwyyipztxddw`와 완전히 분리된 새 Supabase 프로젝트입니다. 스키마(24개 마이그레이션 중 일반 스키마 마이그레이션)는 이미 적용 완료했습니다. 단, 원래 행사의 실데이터(관리자 이메일 등록, 주문 169번 수정, 수동주문 203/204)에 해당하는 5개 마이그레이션은 이 프로젝트에는 적용하지 않고 `migration repair --status applied`로 건너뛰도록 표시해두었습니다 — 파일은 히스토리 보존을 위해 저장소에 그대로 남아 있습니다.
 
 ## 안전 원칙
 
@@ -15,8 +17,8 @@
 데이터베이스 비밀번호는 채팅이나 파일에 저장하지 말고 아래 명령의 보안 프롬프트에 직접 입력합니다.
 
 ```bash
-cd /Users/goyehun/.kiro/crew/workspace/booth-order
-supabase link --project-ref vedraqrdkwyyipztxddw
+cd /Users/jeong/여울제/yeoul2026
+npx supabase link --project-ref rvamsrgvfubsvlttuaqt
 ```
 
 ## 2. 적용 전 확인
@@ -27,19 +29,13 @@ supabase db push --dry-run
 
 출력에는 아직 원격에 적용되지 않은 신규 마이그레이션만 보여야 합니다.
 
-현재 적용 완료된 마이그레이션:
+이 프로젝트에는 스키마 마이그레이션 전부가 적용 완료 상태입니다. 아래 5개는 원래 행사의 실데이터/관리자 이메일에 묶여 있어 실제로는 실행하지 않고 `migration repair --status applied`로 완료 처리만 해두었습니다(파일은 히스토리 보존용으로 남아 있음):
 
-- `20260829110500_booth_order.sql`
 - `20260829111000_booth_admin.sql`
 - `20260829111500_booth_admin_switch.sql`
-- `20260829112000_booth_menu_seed.sql`
-- `20260829112500_booth_order_safety.sql`
-- `20260829113000_booth_payment_account.sql`
-- `20260829114000_booth_kakaopay_link.sql`
 - `20260829115000_booth_admin_reconcile.sql`
-- `20260829115500_booth_payment_account_correct.sql`
-- `20260829120000_booth_name.sql`
-- `20260829120500_booth_order_contact.sql`
+- `20260917040650_fix_order_169_items.sql`
+- `20260917053059_add_manual_orders_203_204.sql`
 
 ## 3. 마이그레이션 적용
 
@@ -72,15 +68,9 @@ select id from auth.users where email = '관리자 이메일';
 
 ## 현재 관리자
 
-- 이메일: `k01027895490@gmail.com`
-- 기존 Supabase Auth 사용자를 `booth_admins`에 등록 완료
-- 이전 네이버 계정의 부스 관리자 권한은 제거 완료
+- 이메일: `ipad93920@gmail.com`
+- 등록 방법: 관리자 화면에서 매직링크로 최초 로그인해 Auth 사용자를 만든 뒤, SQL Editor에서 위 4번 SQL로 `booth_admins`에 등록합니다.
 
 ## 현재 메뉴
 
-현재 고객 주문 화면에 등록된 메뉴입니다.
-
-1. 감자치즈누룽지
-2. 김치말이국수
-3. 청포도에이드
-4. 세트메뉴 (감자치즈누룽지 + 김치말이국수 + 청포도에이드)
+메뉴·가격·부스명은 아직 확정 전입니다. 관리자 화면에서 메뉴 이름·가격을 입력하고 판매 시작을 눌러야 고객 화면에 표시됩니다.

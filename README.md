@@ -10,7 +10,7 @@ Supabase에 연결된 정적 고객·관리자 주문 웹앱입니다.
   - 카카오페이·토스 앱 바로 보내기 또는 계좌번호 복사 후 송금
   - 내 주문과 전체 공개 대기열 Realtime 확인
 - 관리자: `/admin/index.html`
-  - `k01027895490@gmail.com` 비밀번호 로그인 또는 매직링크
+  - `ipad93920@gmail.com` 매직링크 로그인
   - 입금 확인 완료 주문 기준 현재 매출 합계
   - 주문 상태 변경·취소·복구
   - 메뉴 가격 저장, 판매 시작·중지, 품절 관리
@@ -18,7 +18,7 @@ Supabase에 연결된 정적 고객·관리자 주문 웹앱입니다.
 ## 로컬 실행
 
 ```bash
-python3 -m http.server 4173 --bind 127.0.0.1 --directory /Users/goyehun/.kiro/crew/workspace/booth-order
+python3 -m http.server 4173 --bind 127.0.0.1 --directory /Users/jeong/여울제/yeoul2026
 ```
 
 - 고객 화면: http://127.0.0.1:4173/
